@@ -7,8 +7,8 @@ use App\Database\Database;
 Class Katalogs {
     
     function __construct(){
-        // echo "12423";
-        // $a = new Database(); 
+        echo "12423";
+        $a = new Database(); 
     }
 
     // private $kon;

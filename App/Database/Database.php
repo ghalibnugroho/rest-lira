@@ -16,6 +16,7 @@ Class Database{
 
     function __construct()
     {
+		echo "abc";
         $this->link = new mysqli($servername, $username, $password, $database);
     }
 
