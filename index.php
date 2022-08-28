@@ -22,3 +22,4 @@ SimpleRouter::start();
 
 
 //autoload Composer.json ==> untuk auto define namespace
+// composer dumpautoload

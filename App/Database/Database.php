@@ -1,6 +1,8 @@
 <?php
 namespace App\Database;
 
+// use \Mysqli;
+
 Class Database{
 
     var $query;
@@ -9,15 +11,25 @@ Class Database{
     var $errno = '';
 	var $error = '';
 
-    private $servername = "localhost";
-    private $username = "root";
-    private $password = "";
-    private $database = "lira";
+	// connect pakai webserver php native wajib 127.0.0.1 || webserver xampp bisa localhost/127.0.0.1
+
+	public $conn = array(
+		"servername" => "127.0.0.1",
+		"username" => "root",
+		"password" => "",
+		"database" => "lira"
+	);
+
+    // private $servername = "localhost";
+    // private $username = "root";
+    // private $password = "";
+    // private $database = "lira";
 
     function __construct()
     {
 		// echo "abc";
-        $this->link = new mysqli($servername, $username, $password, $database);
+		$this->link = new \mysqli($this->conn["servername"], $this->conn["username"], $this->conn["password"], $this->conn["database"]);
+		// print_r($this->link->query('SELECT DATABASE()')->fetch_row());
     }
 
     // Executes a database query
