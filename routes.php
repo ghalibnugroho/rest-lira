@@ -12,7 +12,7 @@ SimpleRouter::get('/', function() {
 
 SimpleRouter::get('/katalogs', [Katalogs::class, 'getCoveredKatalogs']);
 SimpleRouter::get('/katalogs/all', [Katalogs::class, 'getAllKatalogs']);
-SimpleRouter::get('/katalogs/{id}', [Katalogs::class, 'getKatalogByID']);
+SimpleRouter::get('/katalogs/{id}', [Katalogs::class, 'getDetailKatalogByID']);
 
 SimpleRouter::get('/pinjam', [Sirkulasi::class, 'test']);
 
