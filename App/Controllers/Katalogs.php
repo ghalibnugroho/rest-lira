@@ -16,12 +16,14 @@ Class Katalogs {
 
         $query = "SELECT catalogs.ID, BIBID, Title, Author, PublishYear, CoverURL, (select count(collections.Catalog_id) from collections where Catalog_id = catalogs.ID and Status_id = 1) as Quantity FROM catalogs ORDER BY `catalogs`.`CoverURL` DESC";  
         $result = $this->db->query($query);
+
+        // var_dump($result);
         
         if($result->num_rows > 0){
             if($result){
                 $response["title"] = "Data Buku Katalog";
-                $response["status"] = http_response_code();
-                $response["message"] = "Success";
+                $response["status"] = 1;
+                $response["message"] = "Response Success";
                 $response["data"] = array();
                 while ($row = $result->fetch_array()){
                     $data = array();
@@ -38,17 +40,14 @@ Class Katalogs {
             }
             else{
                 $response["title"] = "Data Buku Katalog Bercover Tidak Tersedia";
-                $response["status"] = http_response_code();
-                $response["message"] = "Failed";
+                $response["status"] = 0;
+                $response["message"] = "Response OK";
                 return json_encode($response);
             }
         }
-        else {
-            // no results found
-                $response["title"] = "Data Buku Katalog Bercover Tidak Tersedia";
-                $response["status"] = http_response_code();
-                $response["message"] = "No Details Found";
-                return json_encode($response);
+        if ($this->db->sql_error()) {
+            $response["message"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
 
     }
@@ -62,8 +61,8 @@ Class Katalogs {
         if($result->num_rows > 0){
             if($result){
                 $response["title"] =  "Data Buku - {$param}";
-                $response["status"] = http_response_code();
-                $response["message"] = "Successfully Displayed";
+                $response["status"] = 1;
+                $response["message"] = "Response Success";
                 $response["data"] = null; // array()
                 while ($row = $result->fetch_array()){
                     $data = null;
@@ -88,16 +87,13 @@ Class Katalogs {
             else{
                 $response["title"] = "Data Buku | `{$param}` Tidak Tersedia";
                 $response["status"] = 0;
-                $response["message"] = "Try Again";
+                $response["message"] = "Response OK";
                 return json_encode($response);
             }
         }
-        else {
-            // no results found
-                $response["title"] = "Buku Tidak Tersedia";
-                $response["status"] = 0;
-                $response["message"] = "No Details Found";
-                return json_encode($response);
+        if ($this->db->sql_error()) {
+            $response["message"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
     }  
 
@@ -117,8 +113,8 @@ Class Katalogs {
         if($result->num_rows > 0){
             if($result){
                 $response["title"] = "Data Buku Katalog";
-                $response["status"] = http_response_code();
-                $response["message"] = "Success";
+                $response["status"] = 1;
+                $response["message"] = "Response Success";
                 $response["data"] = array();
                 while ($row = $result->fetch_array()){
                     $data = array();
@@ -135,17 +131,21 @@ Class Katalogs {
             }
             else{
                 $response["title"] = "Data Buku Katalog Bercover Tidak Tersedia";
-                $response["status"] = http_response_code();
-                $response["message"] = "Failed";
+                $response["status"] = 0;
+                $response["message"] = "Response OK";
                 return json_encode($response);
             }
         }
         else {
             // no results found
                 $response["title"] = "Data Buku Katalog Bercover Tidak Tersedia";
-                $response["status"] = http_response_code();
-                $response["message"] = "No Details Found";
+                $response["status"] = 0;
+                $response["message"] = "Response OK";
                 return json_encode($response);
+        }
+        if ($this->db->sql_error()) {
+            $response["message"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
     }
 

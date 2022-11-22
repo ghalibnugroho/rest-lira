@@ -1,10 +1,9 @@
 {
     "require": {
-        "pecee/simple-router": "4.3.7.2"
+        "pecee/simple-router": "4.3.7.2",
+        "firebase/php-jwt": "^6.3"
     },
     "autoload":{
         "psr-4": {"App\\": "App/"}
     }
 }
-
-
