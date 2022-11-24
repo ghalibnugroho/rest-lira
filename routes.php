@@ -3,8 +3,10 @@
 
 use Pecee\SimpleRouter\SimpleRouter;
 use App\Controllers\Katalogs;
-use App\Controllers\Sirkulasi;
 use App\Controllers\Autentikasi;
+use App\Controllers\Sirkulasi;
+use App\Controllers\Koleksi;
+use App\Controllers\Presensi;
 
 
 SimpleRouter::get('/', function() {
@@ -25,6 +27,10 @@ SimpleRouter::get('/petugas/getAllAnggota', [Sirkulasi::class, 'getAllMembers'])
 SimpleRouter::get('/petugas/anggotaById/{id}', [Sirkulasi::class, 'getMemberByID']);
 SimpleRouter::get('/petugas/anggotaCollectionLoans/{memberNo}', [Sirkulasi::class, 'getMemberCollectionLoans']);
 SimpleRouter::get('/petugas/anggotaCollectionLoanItems/{collectionLoan_id}', [Sirkulasi::class, 'getMemberCollectionLoanItems']);
+SimpleRouter::get('/petugas/koleksiKatalog/{id}', [Koleksi::class, 'getKoleksiKatalogById']);
+SimpleRouter::post('/petugas/tambahKoleksi', [Koleksi::class, 'addKoleksiKatalog']);
+SimpleRouter::delete('/petugas/delete/koleksi/{id}', [Koleksi::class, 'deleteKoleksi']);
+SimpleRouter::get('/petugas/kodeQR/{QR}', [Koleksi::class, 'getKodeQR']);
 SimpleRouter::get('/petugas/daftarPresensi', [Presensi::class, 'getAllDaftarPresensi']);
 
 // anggota route

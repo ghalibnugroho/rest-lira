@@ -129,7 +129,7 @@ Class Autentikasi{
                 $query = "INSERT INTO membersonline (NoAnggota, `Password`, Email, `Status`, CreateBy, CreateDate) values (
                     '$nomorIdentitasPost', '$passwordPost', '$emailPost', 'ACTIVE', '50', '$currentDateTime'
                 )";
-                $result = $this->db->exec($query);
+                $result = $this->db->query($query);
                 $response["status"] = 1;
                 $response["message"] = "Registrasi data berhasil dilakukan";
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
@@ -162,7 +162,6 @@ Class Autentikasi{
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
             }
             else{
-                $response["email"] = "$emailPost";
                 $response["status"] = 0;
                 $response["message"] = "Terjadi Kesalahan pada registrasi";
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
