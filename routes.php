@@ -30,10 +30,12 @@ SimpleRouter::get('/petugas/anggotaCollectionLoanItems/{collectionLoan_id}', [Si
 SimpleRouter::get('/petugas/koleksiKatalog/{id}', [Koleksi::class, 'getKoleksiKatalogById']);
 SimpleRouter::post('/petugas/tambahKoleksi', [Koleksi::class, 'addKoleksiKatalog']);
 SimpleRouter::delete('/petugas/delete/koleksi/{id}', [Koleksi::class, 'deleteKoleksi']);
-SimpleRouter::get('/petugas/kodeQR/{QR}', [Koleksi::class, 'getKodeQR']);
+SimpleRouter::get('/koleksi/kodeQR/{QR}', [Koleksi::class, 'getKodeQR']);
 SimpleRouter::get('/petugas/daftarPresensi', [Presensi::class, 'getAllDaftarPresensi']);
 
 // anggota route
-SimpleRouter::get('/anggota/daftarPresensi/{memberNo}', [Presensi::class, 'getPresensiByMemberNo']);
+SimpleRouter::get('/anggota/logPresensi/{memberNo}', [Presensi::class, 'getPresensiByMemberNo']);
+SimpleRouter::get('/anggota/data/{memberNo}', [Presensi::class, 'getDataAnggota']);
+SimpleRouter::get('/anggota/katalog/koleksi/kodeQR/{QR}', [Sirkulasi::class, 'getKatalogByKodeQR']);
 
 // SimpleRouter::error

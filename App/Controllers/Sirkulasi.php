@@ -169,4 +169,8 @@ Class Sirkulasi{
             return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
     }
+
+    function getKatalogByKodeQR($kodeQR){
+
+    }
 }

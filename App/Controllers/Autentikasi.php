@@ -81,7 +81,7 @@ Class Autentikasi{
 
     function registrasi(){
         $emailPost = $_POST['email'];
-        $passwordPost = $_POST['password'];
+        $passwordPost = sha1($_POST['password']);
         $jenisIdentitasPost = $_POST['jenis_identitas']; //value: 13 NIK / 14 Kartu Mahasiswa
         $nomorIdentitasPost = $_POST['no_identitas']; //value: nomor nik/nim
         $namaPost = $_POST['nama_lengkap']; //value: fullname / nama lengkap
@@ -89,6 +89,18 @@ Class Autentikasi{
         $alamatPost = $_POST['alamat'];
         $noHpPost = $_POST['no_hp'];
         $institusiPost = $_POST['institusi'];
+
+        if($jenisIdentitasPost === "KTP"){
+            $jenisIdentitasPost = 13;
+        }elseif($jenisIdentitasPost === "KTM"){
+            $jenisIdentitasPost = 14;
+        }
+
+        if($jeniskelaminPost === "Pria"){
+            $jeniskelaminPost = 1;
+        }elseif($jeniskelaminPost === "Wanita"){
+            $jeniskelaminPost = 2;
+        }
 
         // var_dump($_POST);
         
@@ -142,7 +154,7 @@ Class Autentikasi{
                 JenisPermohonan_id = 1 (baru), StatusAnggota_id = 3(aktif), CreateBy = 50 (mobileapp), CreateDate = Timestamp
             */
 
-            $query1 = "INSERT INTO members (MemberNo, Fullname, `Address`, AddressNow, Phone, InstitutionName, IdentityType_id, IdentityNo, Sex_id, RegisterDate, EndDate, Email, JenisPermohonan_id, StatusAnggota_id, CreateBy, CreateDate) values ('$nomorIdentitasPost', '$namaPost', '$alamatPost', '$alamatPost', '$noHpPost', '$institusiPost', '$jenisIdentitasPost', '$nomorIdentitasPost', '$jeniskelaminPost','$currentDateTime', '$endDateTime', '$emailPost', '1', '3', '48', '$currentDateTime')";
+            $query1 = "INSERT INTO members (MemberNo, Fullname, `Address`, AddressNow, Phone, InstitutionName, IdentityType_id, IdentityNo, Sex_id, RegisterDate, EndDate, Email, JenisPermohonan_id, StatusAnggota_id, CreateBy, CreateDate) values ('$nomorIdentitasPost', '$namaPost', '$alamatPost', '$alamatPost', '$noHpPost', '$institusiPost', '$jenisIdentitasPost', '$nomorIdentitasPost', '$jeniskelaminPost','$currentDateTime', '$endDateTime', '$emailPost', '1', '3', '50', '$currentDateTime')";
             $result1 = $this->db->query($query1);
             // $lastID1 = $this->db->lastInsertedID();
 
@@ -150,7 +162,7 @@ Class Autentikasi{
                 Insert tabel membersonline
             */
 
-            $query2 = "INSERT INTO membersonline (NoAnggota, `Password`, Email, `Status`, CreateBy, CreateDate) values ('$nomorIdentitasPost', '$passwordPost', '$emailPost', 'ACTIVE', '48', '$currentDateTime')";
+            $query2 = "INSERT INTO membersonline (NoAnggota, `Password`, Email, `Status`, CreateBy, CreateDate) values ('$nomorIdentitasPost', '$passwordPost', '$emailPost', 'ACTIVE', '50', '$currentDateTime')";
             $result2 = $this->db->query($query2);
             // $lastID2 = $this->db->lastInsertedID();
 
