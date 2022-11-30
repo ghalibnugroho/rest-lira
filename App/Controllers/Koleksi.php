@@ -62,7 +62,7 @@ Class Koleksi{
         $queryCheckQRCode = "SELECT NomorBarcode from collections WHERE NomorBarcode = '$nomorQRCodePOST' ";
         $resultQC1 = $this->db->query($queryCheckQRCode);
 
-        // get time / currenttime from php
+        // get time / currenttime from php || ('Y-m-d H:i:s')
         $datetime = new DateTime('Asia/Jakarta');
         $currentDateTime = $datetime->format('Y-m-d H:i:s');
         
