@@ -10,15 +10,15 @@ use App\Controllers\Presensi;
 
 
 SimpleRouter::get('/', function() {
-    echo nl2br("\n \n HOMEPAGE OF DATA TRAFFIC LIRA APP \n \n \n ### IF YOU WAS JUMPED HERE ACCIDENTALLY, IT MEANS YOU GOT SOME ERROR FROM PREVIOUS DATA CONNECTIONS.");
+    echo nl2br("\n \n HOMEPAGE OF DATA TRAFFIC \n \n \n ### IF YOU JUMPED HERE ACCIDENTALLY, IT MEANS YOU GOT SOME ERROR FROM PREVIOUS DATA CONNECTIONS.");
 });
 
-// guest routes
+// Guest route
 SimpleRouter::get('/katalogs', [Katalogs::class, 'getKatalogs']);
 SimpleRouter::get('/katalogs/search', [Katalogs::class, 'getSearchKatalogs']);
 SimpleRouter::get('/katalogs/{id}', [Katalogs::class, 'getKatalogDetailByID']);
 
-// auth route
+// Auth route
 SimpleRouter::post('/auth', [Autentikasi::class, 'login']);
 SimpleRouter::post('/registrasi', [Autentikasi::class, 'registrasi']);
 
@@ -27,18 +27,21 @@ SimpleRouter::get('/petugas/getAllAnggota', [Sirkulasi::class, 'getAllMembers'])
 SimpleRouter::get('/petugas/anggotaById/{id}', [Sirkulasi::class, 'getMemberByID']);
 SimpleRouter::get('/petugas/anggotaCollectionLoans/{memberNo}', [Sirkulasi::class, 'getMemberCollectionLoans']);
 SimpleRouter::get('/petugas/anggotaCollectionLoanItems/{collectionLoan_id}', [Sirkulasi::class, 'getMemberCollectionLoanItems']);
+
 SimpleRouter::get('/petugas/koleksiKatalog/{id}', [Koleksi::class, 'getKoleksiKatalogById']);
 SimpleRouter::post('/petugas/tambahKoleksi', [Koleksi::class, 'addKoleksiKatalog']);
 SimpleRouter::delete('/petugas/delete/koleksi/{id}', [Koleksi::class, 'deleteKoleksi']);
 SimpleRouter::get('/koleksi/kodeQR/{QR}', [Koleksi::class, 'getKodeQR']);
-SimpleRouter::get('/petugas/daftarPresensi', [Presensi::class, 'getAllDaftarPresensi']);
-SimpleRouter::post('/petugas/validasiPeminjaman', [Sirkulasi::class, 'validateLoan']);
-SimpleRouter::delete('/petugas/abortPeminjaman/{collectionLoanId}/{collectionId}', [Sirkulasi::class, 'abortLoan']);
 
-// anggota route
+SimpleRouter::get('/petugas/daftarPresensi', [Presensi::class, 'getAllDaftarPresensi']);
+
+SimpleRouter::put('/petugas/validasiPeminjaman/{collectionLoanId}', [Sirkulasi::class, 'validateLoan']);
+SimpleRouter::delete('/petugas/abortPeminjaman/{collectionLoanId}', [Sirkulasi::class, 'abortLoan']);
+
+
+// Anggota route
 SimpleRouter::get('/anggota/logPresensi/{memberNo}', [Presensi::class, 'getPresensiByMemberNo']);
+SimpleRouter::post('/anggota/presensi', [Presensi::class,'presensiByMemberNo']);
 SimpleRouter::get('/anggota/data/{memberNo}', [Presensi::class, 'getDataAnggota']);
 SimpleRouter::get('/anggota/katalog/koleksi/kodeQR/{QR}', [Sirkulasi::class, 'getKatalogByKodeQR']);
 SimpleRouter::post('/anggota/pinjambuku', [Sirkulasi::class, 'addSirkulasiLoanAnggota']);
-
-// SimpleRouter::error

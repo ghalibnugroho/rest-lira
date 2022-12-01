@@ -259,56 +259,67 @@ Class Sirkulasi{
         $status=(int)$getStatusCollection->fetch_array()['Status_id'];
         // var_dump($status);
 
-        if($status==5 || $status==7){
-            $response["status"] = 0;
-            $response["message"] = "Buku sedang/akan dipinjam";
+        $checkStatusLoanMember="SELECT LoanStatus from collectionloanitems WHERE member_id = '$getMemberIdByMemberNo' && LoanStatus='Loaning'";
+        $getLoanExist=$this->db->query($checkStatusLoanMember);
+
+        // var_dump($getLoanExist);
+
+        if($getLoanExist->num_rows > 0){
+            $response["status"] = -1;
+            $response["message"] = "Tidak bisa meminjam buku, kembalikan dahulu buku yang dipinjam";
             return json_encode($response, JSON_UNESCAPED_SLASHES);
-        }
-        else if($status==1){
-            if($getMaxDayLoanMember==$currentDateTime){
-                // jika hari ini sudah pinjam
-                // input table loanItems, update tambah CollectionCount pada table collectionloans
-    
-                $query1="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$getMaxLoanIdByMemberId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
-                $result1 = $this->db->query($query1);
-    
-                $query2="SELECT count(CollectionLoan_id) as quantity FROM `collectionloanitems` where CollectionLoan_id='$getMaxLoanIdByMemberId'";
-                $result2=$this->db->query($query2);
-                $count=$result2->fetch_array()['quantity'];
-                // var_dump($count['quantity']);
-    
-                $query3="UPDATE collectionloans SET CollectionCount='$count' WHERE ID = '$getMaxLoanIdByMemberId'";
-    
-                $result3=$this->db->query($query3);
-    
-                $query4="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
-                $result4=$this->db->query($query4);
-                
-                $response["status"] = 1;
-                $response["message"] = "Anggota Berhasil meminjam buku";
-                // $response["message2"] = "first if";
+        }else{
+            if($status==5 || $status==7){
+                $response["status"] = 0;
+                $response["message"] = "Buku sedang/akan dipinjam";
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
             }
-            else{
-    
-                // hari ini belum pinjam
-                // input kedua tabel (loans dan loanItems)
-    
-                $query1="INSERT INTO collectionloans(ID, CollectionCount, LateCount, ExtendCount, LoanCount, ReturnCount, Member_id, CreateBy, CreateDate, LocationLibrary_id) VALUES('$loanId', '1', '0', '0', '0','0','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds', '1')";
-                $result1 = $this->db->query($query1);
-    
-    
-                $query2="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$loanId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
-                $result2 = $this->db->query($query2);
-    
-                $query3="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
-                $result3=$this->db->query($query3);
-    
-                $response["status"] = 1;
-                $response["message"] = "Anggota Berhasil meminjam buku";
-                // $response["message2"] = "last Else";
-                return json_encode($response, JSON_UNESCAPED_SLASHES);
-    
+            else if($status==1){
+                if($getMaxDayLoanMember==$currentDateTime){
+                    // jika hari ini sudah pinjam
+                    // input table loanItems, update tambah CollectionCount pada table collectionloans
+        
+                    $query1="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$getMaxLoanIdByMemberId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
+                    $result1 = $this->db->query($query1);
+        
+                    $query2="SELECT count(CollectionLoan_id) as quantity FROM `collectionloanitems` where CollectionLoan_id='$getMaxLoanIdByMemberId'";
+                    $result2=$this->db->query($query2);
+                    $count=$result2->fetch_array()['quantity'];
+                    // var_dump($count['quantity']);
+        
+                    $query3="UPDATE collectionloans SET CollectionCount='$count' WHERE ID = '$getMaxLoanIdByMemberId'";
+        
+                    $result3=$this->db->query($query3);
+        
+                    $query4="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
+                    $result4=$this->db->query($query4);
+                    
+                    $response["status"] = 1;
+                    $response["message"] = "Anggota Berhasil meminjam buku";
+                    // $response["message2"] = "first if";
+                    return json_encode($response, JSON_UNESCAPED_SLASHES);
+                }
+                else{
+        
+                    // hari ini belum pinjam
+                    // input kedua tabel (loans dan loanItems)
+        
+                    $query1="INSERT INTO collectionloans(ID, CollectionCount, LateCount, ExtendCount, LoanCount, ReturnCount, Member_id, CreateBy, CreateDate, LocationLibrary_id) VALUES('$loanId', '1', '0', '0', '0','0','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds', '1')";
+                    $result1 = $this->db->query($query1);
+        
+        
+                    $query2="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$loanId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
+                    $result2 = $this->db->query($query2);
+        
+                    $query3="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
+                    $result3=$this->db->query($query3);
+        
+                    $response["status"] = 1;
+                    $response["message"] = "Anggota Berhasil meminjam buku";
+                    // $response["message2"] = "last Else";
+                    return json_encode($response, JSON_UNESCAPED_SLASHES);
+        
+                }
             }
         }
 
@@ -382,15 +393,18 @@ Class Sirkulasi{
         return $getMemberNo;
     }
 
-    function validateLoan(){
-        
-        $collectionLoanId = $_POST["collectionLoanId"];
-        $collectionId = $_POST["collectionId"];
+    function validateLoan($collectionLoanId){
 
-        $query="UPDATE collections SET Status_id='5' WHERE collections.ID='$collectionId'";
-        $result=$this->db->query($query);
+        $select="SELECT Collection_id from collectionloanitems where CollectionLoan_id = '$collectionLoanId'";
+        $getCollectionId=$this->db->query($select);
 
-        $query="UPDATE collectionloanitems SET LoanStatus='Loaning' WHERE collections.ID='$collectionLoanId'";
+        while($row = $getCollectionId->fetch_array()){
+            $collectionId=$row["Collection_id"];
+            $query="UPDATE collections SET Status_id='5' WHERE collections.ID='$collectionId'";
+            $result=$this->db->query($query);
+        }
+
+        $query="UPDATE collectionloanitems SET LoanStatus='Loaning' WHERE collectionloanitems.CollectionLoan_id='$collectionLoanId'";
         $result=$this->db->query($query);
 
         $response["status"] = 1;
@@ -402,15 +416,21 @@ Class Sirkulasi{
         }
     }
 
-    function abortLoan($collectionLoanId, $collectionId){
+    function abortLoan($collectionLoanId){
+
+        $select="SELECT Collection_id from collectionloanitems where CollectionLoan_id = '$collectionLoanId'";
+        $getCollectionId=$this->db->query($select);
+
+        while($row = $getCollectionId->fetch_array()){
+            $collectionId=$row["Collection_id"];
+            $query="UPDATE collections SET Status_id='1' WHERE collections.ID='$collectionId'";
+            $result=$this->db->query($query);
+        }
+
+        $query="DELETE FROM `collectionloanitems` WHERE CollectionLoan_id = '$collectionLoanId'";
+        $result=$this->db->query($query);
 
         $query="DELETE FROM `collectionloans` WHERE `collectionloans`.`ID` = '$collectionLoanId'";
-        $result=$this->db->query($query);
-
-        $query="DELETE FROM `collectionloanitems` WHERE Collection_id = '$collectionId'";
-        $result=$this->db->query($query);
-
-        $query="UPDATE collections SET Status_id='1' WHERE collections.ID='$collectionId'";
         $result=$this->db->query($query);
 
         $response["status"] = 1;
@@ -421,4 +441,15 @@ Class Sirkulasi{
             return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
     }
+
+    function finishLoan($collectionLoanId){
+
+    }
+
+    function extendLoan($collectionLoanId){
+
+    }
+    
+
+
 }

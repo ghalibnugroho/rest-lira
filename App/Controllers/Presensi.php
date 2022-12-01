@@ -3,6 +3,7 @@ namespace App\Controllers;
 header('Content-type: Application/JSON');
 
 use App\Database\Database;
+use DateTime;
 
 class Presensi{
     var $db;
@@ -122,5 +123,33 @@ class Presensi{
             return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
 
+    }
+
+    function presensiByMemberNo(){
+
+        $memberNo = $_POST["memberNo"];
+        $getMemberId = $this->getMemberIdByMemberNo($memberNo);
+
+        // get current DateTime
+        $datetime = new DateTime('Asia/Jakarta');
+        $currentDateTimeSeconds = $datetime->format('Y-m-d H:i:s');
+
+        $query="INSERT INTO Presensi (member_id, create_date) VALUES ('$getMemberId','$currentDateTimeSeconds')";
+        $result=$this->db->query($query);
+
+        $response["status"] = 1;
+        $response["message"] = "Presensi Berhasil dilakukan";
+
+        if ($this->db->sql_error()) {
+            $response["database"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
+    }
+
+    function getMemberIdByMemberNo($memberNo){
+        $query="SELECT ID FROM members WHERE MemberNo='$memberNo'";
+        $result=$this->db->query($query);
+        $getMemberNo=$result->fetch_array()["ID"];
+        return $getMemberNo;
     }
 }
