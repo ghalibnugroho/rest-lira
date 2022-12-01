@@ -156,19 +156,30 @@ Class Sirkulasi{
                         $collectionId=$row["Collection_id"];
                         $extendloanExist="SELECT CollectionLoanItem_id, DueDateExtend FROM collectionloanextends WHERE CollectionLoan_id='$collectionLoan_id' && Collection_id = '$collectionId'";
                         $getExtendLoanExist=$this->db->query($extendloanExist)->num_rows;
-                        if($getExtendLoanExist>0){
+                        if($getExtendLoanExist>0){ // num_rows count
                             $getExtendLoanDueDate=$this->db->query($extendloanExist)->fetch_array()["DueDateExtend"];
-                            var_dump($getExtendLoanDueDate);
+                            // var_dump($getExtendLoanDueDate);
                             $data["duedate"]=Carbon::parse($getExtendLoanDueDate)->format("d F Y");
+                            $data["isextended"]=1;
                         }else{
                             $data["duedate"]=Carbon::parse($row["DueDate"])->format("d F Y");
+                            $data["isextended"]=0;
                         }
                     // check apakah sudah dikembalikan atau belum
                         if($row["ActualReturn"]==null){
                             $data["actualreturn"]=null;
+                            $data["terlambat"]=0;
                         }else{
-                            $data["actualreturn"]=Carbon::parse($row["ActualReturn"])->format("d F Y"); 
-                        }
+                            $data["actualreturn"]=Carbon::parse($row["ActualReturn"])->format("d F Y");
+                            // setting jumlah keterlambatan
+                            if(Carbon::create($data["actualreturn"])->diffInDays(Carbon::create($data["duedate"]), false)<0){
+                                // var_dump(Carbon::create("15 December 2022")->diffInDays(Carbon::create($data["duedate"]), false));
+                                $data["terlambat"]=Carbon::create($data["actualreturn"])->diffInDays(Carbon::create($data["duedate"]));
+                            }else{
+                                $data["terlambat"]=0;
+                            }
+                        }    
+
                     $data["loanstatus"]=$row["LoanStatus"];
                     $data["catalogsid"]=$row["Catalogs_id"];
                     $data["collectionid"]=$row["Collection_id"];
@@ -455,8 +466,27 @@ Class Sirkulasi{
         }
     }
 
-    function finishLoan($collectionLoanId){
+    function finishLoan($collectionLoanId, $collectionId){
 
+        $query="UPDATE collectionloanitems SET LoanStatus='Return' WHERE collectionloanitems.Collection_id='$collectionId' && collectionloanitems.CollectionLoan_id='$collectionLoanId'";
+        $result=$this->db->query($query);
+
+        $getCurrentDate=Carbon::now()->format("Y-m-d");
+        // var_dump($getCurrentDate);
+
+        $query="UPDATE collectionloanitems SET ActualReturn='$getCurrentDate' WHERE collectionloanitems.Collection_id='$collectionId' && collectionloanitems.CollectionLoan_id='$collectionLoanId'";
+        $result=$this->db->query($query);
+
+        $query="UPDATE collections SET Status_id='1' WHERE collections.ID='$collectionId'";
+        $result=$this->db->query($query);
+
+        $response["status"] = 1;
+        $response["message"] = "Peminjaman telah diselesaikan";
+
+        if ($this->db->sql_error()) {
+            $response["database"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
     }
 
     function extendLoan(){

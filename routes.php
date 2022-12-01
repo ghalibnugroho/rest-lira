@@ -1,6 +1,5 @@
 <?php 
 
-
 use Pecee\SimpleRouter\SimpleRouter;
 use App\Controllers\Katalogs;
 use App\Controllers\Autentikasi;
@@ -10,7 +9,7 @@ use App\Controllers\Presensi;
 
 
 SimpleRouter::get('/', function() {
-    echo nl2br("\n \n HOMEPAGE OF DATA TRAFFIC \n \n \n ### IF YOU JUMPED HERE ACCIDENTALLY, IT MEANS YOU GOT SOME ERROR FROM PREVIOUS DATA CONNECTIONS.");
+    echo nl2br("\n \n HOMEPAGE OF DATA TRAFFIC \n \n \n ### IF YOU GOT JUMPED HERE ACCIDENTALLY, IT MEANS YOU'VE SOME ERROR FROM PREVIOUS DATA CONNECTIONS.");
 });
 
 // Guest route
@@ -39,6 +38,7 @@ SimpleRouter::put('/petugas/validasiPeminjaman/{collectionLoanId}', [Sirkulasi::
 SimpleRouter::delete('/petugas/abortPeminjaman/{collectionLoanId}', [Sirkulasi::class, 'abortLoan']);
 
 SimpleRouter::post('/petugas/extendPeminjaman', [Sirkulasi::class,'extendLoan']);
+SimpleRouter::put('/petugas/finishPeminjaman/{collectionLoanId}/{collectionId}', [Sirkulasi::class, 'finishLoan']);
 
 
 // Anggota route
