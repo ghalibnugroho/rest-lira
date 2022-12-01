@@ -5,6 +5,7 @@ header('Content-type: Application/JSON');
 use App\Database\Database;
 use DateTime;
 use DateTimeZone;
+use Carbon\Carbon;
 
 Class Sirkulasi{
     
@@ -99,7 +100,7 @@ Class Sirkulasi{
                 while ($row = $result->fetch_array()){
                     $data = array();
                     $data["id"] = $row["ID"];
-                    $data["createdate"]=$row["CreateDate"];
+                    $data["createdate"]=Carbon::parse($row["CreateDate"])->format("d-m-Y H:i:s");
                     $data["collectioncount"]=$row["CollectionCount"];
                     array_push($response["data"], $data);
                 }
@@ -149,9 +150,25 @@ Class Sirkulasi{
                     $data["email"]=$row["Email"];
                     $data["phone"]=$row["Phone"];
                     $data["collectionloanid"] = $row["CollectionLoan_id"];
-                    $data["loandate"]=$row["LoanDate"];
-                    $data["duedate"]=$row["DueDate"];
-                    $data["actualreturn"]=$row["ActualReturn"];
+                    $data["loandate"]=Carbon::parse($row["LoanDate"])->format("d F Y");
+
+                    // check duedate apakah sudah diperpanjang/extend atau belum
+                        $collectionId=$row["Collection_id"];
+                        $extendloanExist="SELECT CollectionLoanItem_id, DueDateExtend FROM collectionloanextends WHERE CollectionLoan_id='$collectionLoan_id' && Collection_id = '$collectionId'";
+                        $getExtendLoanExist=$this->db->query($extendloanExist)->num_rows;
+                        if($getExtendLoanExist>0){
+                            $getExtendLoanDueDate=$this->db->query($extendloanExist)->fetch_array()["DueDateExtend"];
+                            var_dump($getExtendLoanDueDate);
+                            $data["duedate"]=Carbon::parse($getExtendLoanDueDate)->format("d F Y");
+                        }else{
+                            $data["duedate"]=Carbon::parse($row["DueDate"])->format("d F Y");
+                        }
+                    // check apakah sudah dikembalikan atau belum
+                        if($row["ActualReturn"]==null){
+                            $data["actualreturn"]=null;
+                        }else{
+                            $data["actualreturn"]=Carbon::parse($row["ActualReturn"])->format("d F Y"); 
+                        }
                     $data["loanstatus"]=$row["LoanStatus"];
                     $data["catalogsid"]=$row["Catalogs_id"];
                     $data["collectionid"]=$row["Collection_id"];
@@ -162,9 +179,6 @@ Class Sirkulasi{
                     $data["coverURL"]=$row["CoverURL"];
                     array_push($response["data"], $data);
                 }
-
-
-
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
             }
             else{
@@ -179,7 +193,6 @@ Class Sirkulasi{
             return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
     }
-
 
     // afterscan screen
     function getKatalogByKodeQR($kodeQR){
@@ -446,7 +459,50 @@ Class Sirkulasi{
 
     }
 
-    function extendLoan($collectionLoanId){
+    function extendLoan(){
+        $collectionLoanId = $_POST["collectionLoanId"];
+        $collectionId=$_POST['collectionId'];
+
+
+        // get loanitemsId
+        $loanItemsID="SELECT ID FROM collectionloanitems WHERE CollectionLoan_id = '$collectionLoanId' && Collection_id='$collectionId'";
+        $getLoanItemsId=$this->db->query($loanItemsID)->fetch_array()["ID"];
+
+        // var_dump($getLoanItemsId);
+
+        // get member_id
+        $memberId="SELECT member_id FROM collectionloanitems WHERE ID = '$getLoanItemsId'";
+        $getMemberId=$this->db->query($memberId)->fetch_array()["member_id"];
+        // var_dump($getMemberId);
+
+        // get date & due date
+        $dateSQL="SELECT LoanDate, DueDate FROM collectionloanitems WHERE ID='$getLoanItemsId'";
+        $getDobleDate=$this->db->query($dateSQL)->fetch_array();
+        // var_dump($getDobleDate);
+
+        $getLoanDate=$getDobleDate[0];  // USE THIS DAtE FOR INPUT DATE EXTEND
+        // var_dump($getLoanDate);
+        $getDueDate=$getDobleDate[1];
+        // var_dump($getDueDate);
+        /*
+            set tambah hari => 7 Days
+        */
+        $getExtendDate = Carbon::parse($getDueDate)->addDays(7)->format("Y-m-d"); 
+        // var_dump($getExtendDate);
+
+        $getCurrentDate=Carbon::now()->format("Y-m-d");
+        // var_dump($getCurrentDate);
+
+        $inputExtend="INSERT INTO collectionloanextends (CollectionLoan_id, CollectionLoanItem_id, Collection_id, Member_id, DateExtend , DueDateExtend, CreateBy, CreateDate) values('$collectionLoanId', '$getLoanItemsId', '$collectionId', '$getMemberId', '$getLoanDate', '$getExtendDate', '50', '$getCurrentDate')";
+        $setInput=$this->db->query($inputExtend);
+
+        $response["status"] = 1;
+        $response["message"] = "Tanggal Peminjaman telah diperpanjang";
+
+        if ($this->db->sql_error()) {
+            $response["database"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
 
     }
     

@@ -4,6 +4,7 @@ header('Content-type: Application/JSON');
 
 use App\Database\Database;
 use DateTime;
+use Carbon\Carbon;
 
 class Presensi{
     var $db;
@@ -29,7 +30,7 @@ class Presensi{
                     $data = array();
                     $data["memberNo"] = $row["MemberNo"];
                     $data["fullName"]=$row["FullName"];
-                    $data["createdate"]=$row["create_date"];
+                    $data["createdate"]=Carbon::parse($row["create_date"])->format("d-m-Y H:i:s");
                     array_push($response["data"], $data);
                 }
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
@@ -53,6 +54,7 @@ class Presensi{
         $result = $this->db->query($query);
 
         // var_dump($result);
+        // var_dump(Carbon::now());
         
         if($result->num_rows > 0){
             if($result){
@@ -64,7 +66,9 @@ class Presensi{
                     $data = array();
                     $data["memberNo"] = $row["MemberNo"];
                     $data["fullName"]=$row["FullName"];
-                    $data["createdate"]=$row["create_date"];
+                    // var_dump($row["create_date"]);
+                    $data["createdate"]=Carbon::parse($row["create_date"])->format("d-m-Y H:i:s");
+
                     array_push($response["data"], $data);
                 }
                 return json_encode($response, JSON_UNESCAPED_SLASHES);
@@ -133,6 +137,7 @@ class Presensi{
         // get current DateTime
         $datetime = new DateTime('Asia/Jakarta');
         $currentDateTimeSeconds = $datetime->format('Y-m-d H:i:s');
+
 
         $query="INSERT INTO Presensi (member_id, create_date) VALUES ('$getMemberId','$currentDateTimeSeconds')";
         $result=$this->db->query($query);

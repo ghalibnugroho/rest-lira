@@ -38,6 +38,8 @@ SimpleRouter::get('/petugas/daftarPresensi', [Presensi::class, 'getAllDaftarPres
 SimpleRouter::put('/petugas/validasiPeminjaman/{collectionLoanId}', [Sirkulasi::class, 'validateLoan']);
 SimpleRouter::delete('/petugas/abortPeminjaman/{collectionLoanId}', [Sirkulasi::class, 'abortLoan']);
 
+SimpleRouter::post('/petugas/extendPeminjaman', [Sirkulasi::class,'extendLoan']);
+
 
 // Anggota route
 SimpleRouter::get('/anggota/logPresensi/{memberNo}', [Presensi::class, 'getPresensiByMemberNo']);
