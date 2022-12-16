@@ -39,6 +39,8 @@ SimpleRouter::delete('/petugas/abortPeminjaman/{collectionLoanId}', [Sirkulasi::
 
 SimpleRouter::post('/petugas/extendPeminjaman', [Sirkulasi::class,'extendLoan']);
 SimpleRouter::put('/petugas/finishPeminjaman/{collectionLoanId}/{collectionId}', [Sirkulasi::class, 'finishLoan']);
+SimpleRouter::get('/petugas/allPelanggaran', [Sirkulasi::class, 'getAllPelanggaran']);
+SimpleRouter::post('/petugas/addPelanggaran', [Sirkulasi::class, 'addPelanggaran']);
 
 
 // Anggota route
@@ -47,3 +49,4 @@ SimpleRouter::post('/anggota/presensi', [Presensi::class,'presensiByMemberNo']);
 SimpleRouter::get('/anggota/data/{memberNo}', [Presensi::class, 'getDataAnggota']);
 SimpleRouter::get('/anggota/katalog/koleksi/kodeQR/{QR}', [Sirkulasi::class, 'getKatalogByKodeQR']);
 SimpleRouter::post('/anggota/pinjambuku', [Sirkulasi::class, 'addSirkulasiLoanAnggota']);
+SimpleRouter::get('/anggota/pelanggaran/{memberNo}', [Sirkulasi::class, 'getPelanggaranByMemberNo']);

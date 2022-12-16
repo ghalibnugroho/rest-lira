@@ -131,7 +131,7 @@ Class Sirkulasi{
         $datetime = new DateTime('Asia/Jakarta');
         $currentDateTime = $datetime->format('dmy');
 
-        $query = "SELECT members.Fullname, members.MemberNo, members.Email, members.Phone, CollectionLoan_id, LoanDate, DueDate, ActualReturn, LoanStatus, catalogs.ID as Catalogs_id, Collection_id, collections.NomorBarcode, catalogs.Title, catalogs.Author, catalogs.PublishYear, catalogs.CoverURL FROM collectionloanitems JOIN collections ON Collection_id = collections.ID JOIN catalogs ON collections.Catalog_id = catalogs.ID JOIN members ON collectionloanitems.member_id = members.ID WHERE CollectionLoan_id = {$collectionLoan_id} && members.id = collectionloanitems.member_id ORDER BY `collectionloanitems`.`CollectionLoan_id` DESC";  
+        $query = "SELECT members.Fullname, members.MemberNo, members.Email, members.Address, members.Phone, CollectionLoan_id, LoanDate, DueDate, ActualReturn, LoanStatus, catalogs.ID as Catalogs_id, Collection_id, collections.NomorBarcode, catalogs.Title, catalogs.Author, catalogs.PublishYear, catalogs.CoverURL FROM collectionloanitems JOIN collections ON Collection_id = collections.ID JOIN catalogs ON collections.Catalog_id = catalogs.ID JOIN members ON collectionloanitems.member_id = members.ID WHERE CollectionLoan_id = {$collectionLoan_id} && members.id = collectionloanitems.member_id ORDER BY `collectionloanitems`.`CollectionLoan_id` DESC";  
 
         $result = $this->db->query($query);
 
@@ -148,6 +148,7 @@ Class Sirkulasi{
                     $data["fullname"]=$row["Fullname"];
                     $data["memberno"]=$row["MemberNo"];
                     $data["email"]=$row["Email"];
+                    $data["address"]=$row["Address"];
                     $data["phone"]=$row["Phone"];
                     $data["collectionloanid"] = $row["CollectionLoan_id"];
                     $data["loandate"]=Carbon::parse($row["LoanDate"])->format("d F Y");
@@ -288,11 +289,17 @@ Class Sirkulasi{
 
         // var_dump($getLoanExist);
 
+        $checkCurrentDayStatusLoanMember="SELECT LoanStatus from collectionloanitems WHERE member_id = '$getMemberIdByMemberNo' && LoanStatus='Return' && CollectionLoan_id ='$getMaxLoanIdByMemberId'";
+        $getLoanExistCurrentDay=$this->db->query($checkCurrentDayStatusLoanMember);
+
+        // var_dump($getLoanExistCurrentDay);
+
         if($getLoanExist->num_rows > 0){
             $response["status"] = -1;
             $response["message"] = "Tidak bisa meminjam buku, kembalikan dahulu buku yang dipinjam";
             return json_encode($response, JSON_UNESCAPED_SLASHES);
-        }else{
+        }
+        else{
             if($status==5 || $status==7){
                 $response["status"] = 0;
                 $response["message"] = "Buku sedang/akan dipinjam";
@@ -302,26 +309,31 @@ Class Sirkulasi{
                 if($getMaxDayLoanMember==$currentDateTime){
                     // jika hari ini sudah pinjam
                     // input table loanItems, update tambah CollectionCount pada table collectionloans
-        
-                    $query1="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$getMaxLoanIdByMemberId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
-                    $result1 = $this->db->query($query1);
-        
-                    $query2="SELECT count(CollectionLoan_id) as quantity FROM `collectionloanitems` where CollectionLoan_id='$getMaxLoanIdByMemberId'";
-                    $result2=$this->db->query($query2);
-                    $count=$result2->fetch_array()['quantity'];
-                    // var_dump($count['quantity']);
-        
-                    $query3="UPDATE collectionloans SET CollectionCount='$count' WHERE ID = '$getMaxLoanIdByMemberId'";
-        
-                    $result3=$this->db->query($query3);
-        
-                    $query4="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
-                    $result4=$this->db->query($query4);
-                    
-                    $response["status"] = 1;
-                    $response["message"] = "Anggota Berhasil meminjam buku";
-                    // $response["message2"] = "first if";
-                    return json_encode($response, JSON_UNESCAPED_SLASHES);
+                    if($getLoanExistCurrentDay->num_rows > 0){
+                        $response["status"] = -2;
+                        $response["message"] = "Anda telah melakukan peminjaman hari ini, kembali lagi besok";
+                        return json_encode($response, JSON_UNESCAPED_SLASHES);
+                    }else{
+                        $query1="INSERT INTO collectionloanitems(CollectionLoan_Id, LoanDate, DueDate, LoanStatus, Collection_id, member_id, CreateBy, CreateDate) VALUES('$getMaxLoanIdByMemberId', '$currentDateTimeSeconds', '$endDateTime', 'Waiting', '$collectionId','$getMemberIdByMemberNo', '50', '$currentDateTimeSeconds')";
+                        $result1 = $this->db->query($query1);
+            
+                        $query2="SELECT count(CollectionLoan_id) as quantity FROM `collectionloanitems` where CollectionLoan_id='$getMaxLoanIdByMemberId'";
+                        $result2=$this->db->query($query2);
+                        $count=$result2->fetch_array()['quantity'];
+                        // var_dump($count['quantity']);
+            
+                        $query3="UPDATE collectionloans SET CollectionCount='$count' WHERE ID = '$getMaxLoanIdByMemberId'";
+            
+                        $result3=$this->db->query($query3);
+            
+                        $query4="UPDATE collections SET Status_id='7' WHERE collections.ID='$collectionId'";
+                        $result4=$this->db->query($query4);
+                        
+                        $response["status"] = 1;
+                        $response["message"] = "Anggota Berhasil meminjam buku";
+                        // $response["message2"] = "first if";
+                        return json_encode($response, JSON_UNESCAPED_SLASHES);
+                    }
                 }
                 else{
         
@@ -534,6 +546,143 @@ Class Sirkulasi{
             return json_encode($response, JSON_UNESCAPED_SLASHES);
         }
 
+    }
+
+    function getAllPelanggaran(){
+
+        $allPelanggaran = "SELECT pelanggaran.CollectionLoan_id, members.Fullname, pelanggaran.Collection_id, catalogs.Title, catalogs.Author, catalogs.PublishYear, jenis_pelanggaran.JenisPelanggaran, jumlahDenda, pelanggaran.CreateDate from pelanggaran JOIN collections on pelanggaran.Collection_id = collections.ID JOIN catalogs on collections.Catalog_id = catalogs.ID JOIN jenis_pelanggaran on pelanggaran.JenisPelanggaran_id = jenis_pelanggaran.ID JOIN members on members.ID = pelanggaran.Member_id ORDER BY `pelanggaran`.`CreateDate` DESC";
+
+        $result = $this->db->query($allPelanggaran);
+
+        // var_dump($result);
+        
+        if($result->num_rows > 0){
+            if($result){
+                $response["title"] = "Pelanggaran Anggota";
+                $response["status"] = 1;
+                $response["message"] = "Response Success";
+                $response["data"] = array();
+                while ($row = $result->fetch_array()){
+                    $data = array();
+                    $data["collectionloanId"]=$row["CollectionLoan_id"];
+                    $data["fullName"]=$row["Fullname"];
+                    $data["collectionId"]=$row["Collection_id"];
+                    $data["title"]=$row["Title"];
+                    $data["author"]=$row["Author"];
+                    $data["publishyear"]=$row["PublishYear"];
+                    $data["jenispelanggaran"]=$row["JenisPelanggaran"];
+                    $data["jumlahdenda"]=$row["jumlahDenda"];
+                    $data["createDate"]=Carbon::parse($row["CreateDate"])->format("d F Y");
+                    array_push($response["data"], $data);
+                }
+                return json_encode($response, JSON_UNESCAPED_SLASHES);
+            }
+            else{
+                $response["title"] = "Data Pelanggaran Tidak Tersedia";
+                $response["status"] = 0;
+                $response["message"] = "Response OK";
+                return json_encode($response);
+            }
+        }
+        if ($this->db->sql_error()) {
+            $response["message"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
+    }
+
+    function getPelanggaranByMemberNo($memberNo){
+        $pelanggaranByMemberNo = "SELECT pelanggaran.CollectionLoan_id, members.Fullname, pelanggaran.Collection_id, catalogs.Title, catalogs.Author, catalogs.PublishYear, jenis_pelanggaran.JenisPelanggaran, jumlahDenda, pelanggaran.CreateDate from pelanggaran JOIN collections on pelanggaran.Collection_id = collections.ID JOIN catalogs on collections.Catalog_id = catalogs.ID JOIN jenis_pelanggaran on pelanggaran.JenisPelanggaran_id = jenis_pelanggaran.ID JOIN members on members.ID = pelanggaran.Member_id WHERE members.MemberNo = '$memberNo'";
+
+        $result = $this->db->query($pelanggaranByMemberNo);
+
+        // var_dump($result);
+        
+        if($result->num_rows > 0){
+            if($result){
+                $response["title"] = "Pelanggaran Anggota";
+                $response["status"] = 1;
+                $response["message"] = "Response Success";
+                $response["data"] = array();
+                while ($row = $result->fetch_array()){
+                    $data = array();
+                    $data["collectionloanId"]=$row["CollectionLoan_id"];
+                    $data["fullName"]=$row["Fullname"];
+                    $data["collectionId"]=$row["Collection_id"];
+                    $data["title"]=$row["Title"];
+                    $data["author"]=$row["Author"];
+                    $data["publishyear"]=$row["PublishYear"];
+                    $data["jenispelanggaran"]=$row["JenisPelanggaran"];
+                    $data["jumlahdenda"]=$row["jumlahDenda"];
+                    $data["createDate"]=Carbon::parse($row["CreateDate"])->format("d F Y");
+                    array_push($response["data"], $data);
+                }
+                return json_encode($response, JSON_UNESCAPED_SLASHES);
+            }
+            else{
+                $response["title"] = "Data Pelanggaran Tidak Tersedia";
+                $response["status"] = 0;
+                $response["message"] = "Response OK";
+                $response["data"] = null;
+                return json_encode($response);
+            }
+        }else{
+            $response["title"] = "Data Pelanggaran Tidak Tersedia";
+            $response["status"] = 0;
+            $response["message"] = "Response OK";
+            $response["data"] = null;
+            return json_encode($response);
+        }
+        if ($this->db->sql_error()) {
+            $response["message"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
+    }
+
+    function addPelanggaran(){
+        $memberNoPost = $_POST["memberNo"];
+        $collectionLoanIdPost = $_POST["collectionLoanId"];
+        $collectionIdPost = $_POST["collectionId"];
+        $jenisPelanggaranPost = $_POST["jenisPelanggaran"];
+        $jumlahDendaPost = $_POST["jumlahDenda"];
+
+        // var_dump($_POST);
+
+        //set jenis_denda ID = 3 {Ganti Uang}
+
+        // set jenis_pelanggaran ID = 1. Telat / 2. Rusak / 3. Hilang / 12. Telat + Rusak
+
+        if($jenisPelanggaranPost == "Telat"){
+            $jenisPelanggaranPost = 1;
+        }else if($jenisPelanggaranPost == "Rusak"){
+            $jenisPelanggaranPost = 2;
+        }else if($jenisPelanggaranPost == "Hilang"){
+            $jenisPelanggaranPost = 3;
+        }
+        else{
+            $jenisPelanggaranPost = 12;
+        }
+
+        // get memberId by memberNo
+        $getMemberIdByMemberNo=$this->getMemberIdByMemberNo($memberNoPost);
+        // get loanitemsId
+        $loanItemsID="SELECT ID FROM collectionloanitems WHERE CollectionLoan_id = '$collectionLoanIdPost' && Collection_id='$collectionIdPost'";
+        $getLoanItemsId=$this->db->query($loanItemsID)->fetch_array()["ID"];
+        $currentDateTimeSeconds = Carbon::now()->format("Y-m-d");
+        // var_dump($getMemberIdByMemberNo);
+        // var_dump($getLoanItemsId);
+        // var_dump($currentDateTimeSeconds);
+        // var_dump($jenisPelanggaranPost);
+
+        $inputPelanggaran = "INSERT INTO pelanggaran (CollectionLoan_id, CollectionLoanItem_id, JenisPelanggaran_id, JenisDenda_id, JumlahDenda, CreateBy, CreateDate, JumlahSuspend, Member_id, Collection_id) VALUES('$collectionLoanIdPost', '$getLoanItemsId', '$jenisPelanggaranPost', '3', '$jumlahDendaPost', '50', '$currentDateTimeSeconds', '7', '$getMemberIdByMemberNo', '$collectionIdPost')";
+        $setInput=$this->db->query($inputPelanggaran);
+
+        $response["status"] = 1;
+        $response["message"] = "Pelanggaran telah tersimpan";
+
+        if ($this->db->sql_error()) {
+            $response["database"] = "DB-nya ".$this->db->sql_error();
+            return json_encode($response, JSON_UNESCAPED_SLASHES);
+        }
     }
     
 
