@@ -17,7 +17,7 @@ Class Katalogs {
         $query = "SELECT catalogs.ID, BIBID, Title, Author, PublishYear, CoverURL, (select count(collections.Catalog_id) from collections where Catalog_id = catalogs.ID and Status_id = 1) as Quantity FROM catalogs ORDER BY `catalogs`.`CoverURL` DESC LIMIT 700";  
         $result = $this->db->query($query);
 
-        // var_dump($result);
+        //var_dump($result);
         
         if($result->num_rows > 0){
             if($result){

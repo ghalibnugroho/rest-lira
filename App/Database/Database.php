@@ -17,7 +17,7 @@ Class Database{
 		"servername" => "127.0.0.1",
 		"username" => "root",
 		"password" => "",
-		"database" => "lira"
+		"database" => "lira1"
 	);
 
     function __construct()
